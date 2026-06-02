@@ -48,15 +48,15 @@ function buildLines() {
 
   lines.push([]);
   lines.push([h('  All Projects'), d('  (4 tracked)')]);
-  lines.push([b('  ─────────────────────────────────────────────────────────────────')]);
-  lines.push([b('    Project                       │ Cost     │ Budget   │ Status     ')]);
-  lines.push([b('  ────────────────────────────────┼──────────┼──────────┼────────────')]);
-  lines.push([mk('  ▸ '), h('cyckuan/ck-costmanager       '), b('│'), n(' $4.72    '), b('│'), n(' $10.00   '), b('│'), green(' 47%')]);
-  lines.push([n('    '), d('cyckuan/ck-statusline        '), b('│'), n(' $18.30   '), b('│'), n(' $25.00   '), b('│'), green(' 73%')]);
-  lines.push([n('    '), d('acme-corp/billing-api        '), b('│'), n(' $42.15   '), b('│'), n(' $50.00   '), b('│'), orange(' 84%')]);
-  lines.push([n('    '), d('/home/user/scratch/prototype '), b('│'), n(' $7.80    '), b('│'), n(' $5.00    '), b('│'), red(' 156% OVER')]);
-  lines.push([b('  ────────────────────────────────┼──────────┼──────────┼────────────')]);
-  lines.push([h('    Grand total                   '), b('│'), h(' $72.97   '), b('│')]);
+  lines.push([b('  ───────────────────────────────────────────────────────────────────')]);
+  lines.push([b('    Project                         │ Cost     │ Budget   │ Status     ')]);
+  lines.push([b('  ──────────────────────────────────┼──────────┼──────────┼────────────')]);
+  lines.push([n('  '), mk('▸'), n(' '), h('cyckuan/ck-costmanager         '), b('│'), n(' $4.72    '), b('│'), n(' $10.00   '), b('│'), green(' 47%')]);
+  lines.push([n('    '), d('cyckuan/ck-statusline          '), b('│'), n(' $18.30   '), b('│'), n(' $25.00   '), b('│'), green(' 73%')]);
+  lines.push([n('    '), d('acme-corp/billing-api          '), b('│'), n(' $42.15   '), b('│'), n(' $50.00   '), b('│'), orange(' 84%')]);
+  lines.push([n('    '), d('/home/user/scratch/prototype   '), b('│'), n(' $7.80    '), b('│'), n(' $5.00    '), b('│'), red(' 156% OVER')]);
+  lines.push([b('  ──────────────────────────────────┼──────────┼──────────┼────────────')]);
+  lines.push([h('    Grand total                     '), b('│'), h(' $72.97   '), b('│')]);
   lines.push([]);
   lines.push([d('    Last activity: 2m ago (cyckuan/ck-costmanager)')]);
   lines.push([]);

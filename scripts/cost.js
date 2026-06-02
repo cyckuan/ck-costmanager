@@ -661,13 +661,13 @@ function cmdProjects() {
 
   for (const row of rows) {
     let displayId = row.id;
-    const maxNameLen = COL_NAME - 2;
+    const maxNameLen = COL_NAME - 4;
     if (displayId.length > maxNameLen) {
       displayId = '…' + displayId.slice(-(maxNameLen - 1));
     }
     const nameColor = row.isCurrent ? c.header : c.dim;
     const prefix = row.isCurrent ? `${c.marker}▸${c.reset} ` : '  ';
-    const nameField = `${prefix}${nameColor}${padRight(displayId, maxNameLen)}${c.reset}`;
+    const nameField = `  ${prefix}${nameColor}${padRight(displayId, maxNameLen)}${c.reset}`;
 
     let statusColor, statusText;
     if (!row.enabled) {
@@ -691,7 +691,7 @@ function cmdProjects() {
   }
 
   console.log(`  ${c.border}${'─'.repeat(COL_NAME)}┼${'─'.repeat(COL_COST)}┼${'─'.repeat(COL_BUDGET)}┼${'─'.repeat(COL_STATUS)}${c.reset}`);
-  console.log(`  ${c.header}${padRight('Grand total', COL_NAME - 2)}${c.reset}${c.border}│${c.reset} ${c.header}${padRight('$' + grandTotal.toFixed(2), COL_COST - 1)}${c.reset}${c.border}│${c.reset}`);
+  console.log(`  ${c.header}${padRight('  Grand total', COL_NAME)}${c.reset}${c.border}│${c.reset}${padRight(' $' + grandTotal.toFixed(2), COL_COST)}${c.border}│${c.reset}`);
   console.log('');
 
   if (rows.length > 0) {
