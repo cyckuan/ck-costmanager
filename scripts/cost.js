@@ -647,19 +647,27 @@ function cmdProjects() {
 
   rows.sort((a, b) => b.lastTs - a.lastTs);
 
+  const COL_NAME = 32;
+  const COL_COST = 10;
+  const COL_BUDGET = 10;
+  const COL_STATUS = 12;
+  const TABLE_W = COL_NAME + 1 + COL_COST + 1 + COL_BUDGET + 1 + COL_STATUS;
+
   console.log('');
   console.log(`  ${c.header}All Projects${c.reset}  ${c.dim}(${rows.length} tracked)${c.reset}`);
-  console.log(`  ${c.border}${'─'.repeat(72)}${c.reset}`);
-  console.log(`  ${c.border}${padRight('Project', 32)}│ ${padRight('Cost', 10)}│ ${padRight('Budget', 10)}│ ${padRight('Status', 12)}${c.reset}`);
-  console.log(`  ${c.border}${'─'.repeat(32)}┼${'─'.repeat(11)}┼${'─'.repeat(11)}┼${'─'.repeat(13)}${c.reset}`);
+  console.log(`  ${c.border}${'─'.repeat(TABLE_W)}${c.reset}`);
+  console.log(`  ${c.border}${padRight('  Project', COL_NAME)}│${padRight(' Cost', COL_COST)}│${padRight(' Budget', COL_BUDGET)}│${padRight(' Status', COL_STATUS)}${c.reset}`);
+  console.log(`  ${c.border}${'─'.repeat(COL_NAME)}┼${'─'.repeat(COL_COST)}┼${'─'.repeat(COL_BUDGET)}┼${'─'.repeat(COL_STATUS)}${c.reset}`);
 
   for (const row of rows) {
-    const marker = row.isCurrent ? `${c.marker}▸ ${c.reset}` : '  ';
     let displayId = row.id;
-    if (displayId.length > 29) {
-      displayId = '…' + displayId.slice(-(28));
+    const maxNameLen = COL_NAME - 2;
+    if (displayId.length > maxNameLen) {
+      displayId = '…' + displayId.slice(-(maxNameLen - 1));
     }
     const nameColor = row.isCurrent ? c.header : c.dim;
+    const prefix = row.isCurrent ? `${c.marker}▸${c.reset} ` : '  ';
+    const nameField = `${prefix}${nameColor}${padRight(displayId, maxNameLen)}${c.reset}`;
 
     let statusColor, statusText;
     if (!row.enabled) {
@@ -676,14 +684,14 @@ function cmdProjects() {
       statusText = `${row.pct}%`;
     }
 
-    const costStr = '$' + row.totalCost.toFixed(2);
-    const budgetStr = '$' + row.budget.toFixed(2);
+    const costStr = ' $' + row.totalCost.toFixed(2);
+    const budgetStr = ' $' + row.budget.toFixed(2);
 
-    console.log(`${marker}${nameColor}${padRight(displayId, 30)}${c.reset}${c.border}│${c.reset} ${padRight(costStr, 10)}${c.border}│${c.reset} ${padRight(budgetStr, 10)}${c.border}│${c.reset} ${statusColor}${statusText}${c.reset}`);
+    console.log(`${nameField}${c.border}│${c.reset}${padRight(costStr, COL_COST)}${c.border}│${c.reset}${padRight(budgetStr, COL_BUDGET)}${c.border}│${c.reset} ${statusColor}${statusText}${c.reset}`);
   }
 
-  console.log(`  ${c.border}${'─'.repeat(32)}┼${'─'.repeat(11)}┼${'─'.repeat(11)}┼${'─'.repeat(13)}${c.reset}`);
-  console.log(`  ${c.header}${padRight('Grand total', 30)}${c.reset}${c.border}│${c.reset} ${c.header}${padRight('$' + grandTotal.toFixed(2), 10)}${c.reset}${c.border}│${c.reset}`);
+  console.log(`  ${c.border}${'─'.repeat(COL_NAME)}┼${'─'.repeat(COL_COST)}┼${'─'.repeat(COL_BUDGET)}┼${'─'.repeat(COL_STATUS)}${c.reset}`);
+  console.log(`  ${c.header}${padRight('Grand total', COL_NAME - 2)}${c.reset}${c.border}│${c.reset} ${c.header}${padRight('$' + grandTotal.toFixed(2), COL_COST - 1)}${c.reset}${c.border}│${c.reset}`);
   console.log('');
 
   if (rows.length > 0) {
