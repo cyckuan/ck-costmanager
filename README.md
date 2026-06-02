@@ -1,8 +1,20 @@
 # ck-costmanager
 
-A Claude Code plugin that tracks token usage and calculates costs. Tracking is on by default — no setup required.
+A Claude Code plugin that tracks token usage and calculates costs per project. Tracking is on by default — no setup required.
 
 ![Cost Report](assets/report-preview.png)
+
+## Why
+
+Claude Code doesn't provide per-project cost breakdowns. If you work across multiple repositories — or bill clients for AI-assisted development — you need to know exactly what each project costs.
+
+**Client budgets.** When a client allocates a fixed budget for AI-assisted work, you need real-time visibility into spend so you don't exceed the agreement. Set the budget with `/cost budget` and get immediate visual feedback when you're approaching the limit.
+
+**Invoicing and billing.** The per-project cost logs (`~/.claude/cost-logs/*.jsonl`) provide a timestamped record of every API call — model used, tokens consumed, dollar cost. This data can form the basis of itemized invoices for contract work.
+
+**Multi-project awareness.** Developers often context-switch across repositories in a single day. `/cost projects` shows a unified view of spend across all tracked projects, so you can see where your budget is going without switching directories.
+
+**Persistent across sessions.** Cost data is stored on the filesystem, not in conversation memory. Logs survive `/clear`, session restarts, plugin reinstalls, and machine reboots. Your cost history is never lost.
 
 ## Installation
 
@@ -125,9 +137,20 @@ A Stop hook fires after each turn and parses the session transcript to extract t
 
 Multiple Claude Code sessions in different repos track independently.
 
+## Persistence
+
+Cost logs are written to the filesystem (`~/.claude/cost-logs/`), not stored in conversation context. This means:
+
+- **`/clear` safe** — clearing conversation history does not affect cost data
+- **Restart safe** — quitting and restarting Claude Code picks up where it left off
+- **Reinstall safe** — logs are outside the plugin directory and survive plugin removal/reinstall
+- **Multi-session safe** — different terminal sessions writing to the same project append to the same log file
+
+The only way to lose data is to manually delete the log files or run `/cost reset`.
+
 ## Log location
 
-Logs are stored in `~/.claude/cost-logs/` — one `.jsonl` file per project plus a `state.json` for tracking offsets and budgets. This location survives plugin reinstalls.
+Logs are stored in `~/.claude/cost-logs/` — one `.jsonl` file per project plus a `state.json` for tracking offsets and budgets.
 
 ## Model pricing
 
