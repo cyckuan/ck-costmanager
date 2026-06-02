@@ -4,6 +4,46 @@ A Claude Code plugin that tracks token usage and calculates costs. Tracking is o
 
 ![Cost Report](assets/report-preview.png)
 
+## Installation
+
+### From git repository
+
+```bash
+claude plugin add --from git@github.com:cyckuan/ck-costmanager.git
+```
+
+Or using HTTPS:
+
+```bash
+claude plugin add --from https://github.com/cyckuan/ck-costmanager.git
+```
+
+Restart Claude Code. Tracking begins automatically on the next session.
+
+### Manual clone
+
+1. Clone the repository:
+
+```bash
+git clone git@github.com:cyckuan/ck-costmanager.git ~/.claude/plugins/local/ck-costmanager
+```
+
+2. Restart Claude Code. The Stop hook registers automatically and begins tracking.
+
+## Uninstallation
+
+Remove the plugin and optionally delete stored logs:
+
+```bash
+claude plugin remove ck-costmanager
+```
+
+To also remove cost logs:
+
+```bash
+rm -rf ~/.claude/cost-logs/
+```
+
 ## Commands
 
 | Command | Description |
