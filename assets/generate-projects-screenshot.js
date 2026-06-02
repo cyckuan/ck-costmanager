@@ -139,6 +139,9 @@ function render() {
   const tmpCtx = tmpCanvas.getContext('2d');
   tmpCtx.font = `${FONT_SIZE}px "JetBrains Mono"`;
 
+  // Fixed character width for monospace alignment
+  const CHAR_W = tmpCtx.measureText('M').width;
+
   let maxWidth = 0;
   for (const line of reportLines) {
     if (line.length === 0) continue;
@@ -166,7 +169,8 @@ function render() {
       ctx.font = seg.bold ? `bold ${FONT_SIZE}px "JetBrains Mono"` : `${FONT_SIZE}px "JetBrains Mono"`;
       ctx.fillStyle = seg.color;
       ctx.fillText(seg.text, x, y);
-      x += ctx.measureText(seg.text).width;
+      // Advance by character count * fixed char width (true monospace)
+      x += seg.text.length * CHAR_W;
     }
     y += LINE_HEIGHT;
   }
