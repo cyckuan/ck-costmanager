@@ -150,9 +150,39 @@ Cost logs are written to the filesystem (`~/.claude/cost-logs/`), not stored in 
 
 The only way to lose data is to manually delete the log files or run `/cost reset`.
 
+## Team usage
+
+Cost tracking supports teams of developers working on shared projects. Each log entry includes the developer's identity (git username, with OS username as fallback), so costs can be attributed per person.
+
+### Shared log directory
+
+Point all team members at a shared location by setting the `CLAUDE_COST_LOG_DIR` environment variable:
+
+```bash
+export CLAUDE_COST_LOG_DIR=/mnt/shared/claude-costs
+```
+
+Add this to each developer's shell profile. All team members will append to the same per-project log files, with each entry tagged by username. This enables:
+
+- Per-developer cost breakdowns on shared projects
+- Team-wide budget tracking
+- Centralized data for invoicing and reporting
+
+The shared directory can be a network mount, a synced folder (Dropbox, Google Drive), or any path accessible to all team members.
+
+### Log entry format
+
+Each line in a `.jsonl` log file contains:
+
+```json
+{"ts":1717400000000,"user":"alice","model":"opus","input":5000,"output":1200,"cacheWrite":1000,"cacheRead":8000,"isSubagent":false}
+```
+
+The `user` field is the git `user.name` of the developer who generated the tokens, falling back to the OS username if git is not configured.
+
 ## Log location
 
-Logs are stored in `~/.claude/cost-logs/` — one `.jsonl` file per project plus a `state.json` for tracking offsets and budgets.
+By default, logs are stored in `~/.claude/cost-logs/`. Override with the `CLAUDE_COST_LOG_DIR` environment variable. Each project gets one `.jsonl` file plus a shared `state.json` for tracking offsets and budgets.
 
 ## Model pricing
 

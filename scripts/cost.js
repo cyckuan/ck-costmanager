@@ -9,7 +9,7 @@ const { execSync } = require('child_process');
 const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT || path.resolve(__dirname, '..');
 const COST_PATH = path.join(PLUGIN_ROOT, 'config', 'modelcost.json');
 const COLORS_PATH = path.join(PLUGIN_ROOT, 'config', 'colors.json');
-const LOG_DIR = path.join(os.homedir(), '.claude', 'cost-logs');
+const LOG_DIR = process.env.CLAUDE_COST_LOG_DIR || path.join(os.homedir(), '.claude', 'cost-logs');
 const STATE_PATH = path.join(LOG_DIR, 'state.json');
 const SETTINGS_PATH = path.join(os.homedir(), '.claude', 'settings.json');
 const DEFAULT_BUDGET = 10;
@@ -84,6 +84,19 @@ function loadColorScheme() {
 }
 
 const c = loadColorScheme();
+
+// ─── USER IDENTITY ────────────────────────────────────────────────────────────
+function getUsername() {
+  try {
+    return execSync('git config user.name', {
+      encoding: 'utf8',
+      timeout: 2000,
+      stdio: ['pipe', 'pipe', 'pipe']
+    }).trim();
+  } catch {
+    return os.userInfo().username || 'unknown';
+  }
+}
 
 // ─── PROJECT IDENTITY ──────────────────────────────────────────────────────────
 function getProjectId(cwd) {
@@ -574,6 +587,7 @@ function cmdLog() {
 
         const entry = {
           ts: obj.timestamp ? new Date(obj.timestamp).getTime() : 0,
+          user: getUsername(),
           model: tier,
           input: usage.input_tokens || 0,
           output: usage.output_tokens || 0,
