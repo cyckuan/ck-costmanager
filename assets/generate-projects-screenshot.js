@@ -70,9 +70,9 @@ function buildLines() {
 
   lines.push([]);
   lines.push([h('  All Projects'), d('  (4 tracked)')]);
-  lines.push([b('  ' + '─'.repeat(C1 + C2 + C3 + C4 + 3))]);
-  lines.push([b('  ' + pad('  Project', C1) + '│' + pad(' Cost', C2) + '│' + pad(' Budget', C3) + '│' + pad(' Status', C4))]);
-  lines.push([b('  ' + '─'.repeat(C1) + '┼' + '─'.repeat(C2) + '┼' + '─'.repeat(C3) + '┼' + '─'.repeat(C4))]);
+  lines.push([b('─'.repeat(C1 + C2 + C3 + C4 + 3))]);
+  lines.push([b(pad('  Project', C1) + '│' + pad(' Cost', C2) + '│' + pad(' Budget', C3) + '│' + pad(' Status', C4))]);
+  lines.push([b('─'.repeat(C1) + '┼' + '─'.repeat(C2) + '┼' + '─'.repeat(C3) + '┼' + '─'.repeat(C4))]);
 
   for (const p of projects) {
     const nameLen = C1 - 4; // 4 chars for "  ▸ " or "    "
@@ -101,8 +101,8 @@ function buildLines() {
     lines.push(tableRow(nameSegs, costField, budgetField, statusSegs));
   }
 
-  lines.push([b('  ' + '─'.repeat(C1) + '┼' + '─'.repeat(C2) + '┼' + '─'.repeat(C3) + '┼' + '─'.repeat(C4))]);
-  lines.push([h('  ' + pad('  Grand total', C1)), b('│'), h(pad(' $72.97', C2)), b('│')]);
+  lines.push([b('─'.repeat(C1) + '┼' + '─'.repeat(C2) + '┼' + '─'.repeat(C3) + '┼' + '─'.repeat(C4))]);
+  lines.push([h(pad('  Grand total', C1)), b('│'), h(pad(' $72.97', C2)), b('│')]);
   lines.push([]);
   lines.push([d('    Last activity: 2m ago (cyckuan/ck-costmanager)')]);
   lines.push([]);
