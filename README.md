@@ -122,6 +122,8 @@ The report adapts its color scheme to your current Claude Code theme (dark or li
 
 Each project is tracked independently. `/cost report` always shows the current project; `/cost projects` shows a summary across all tracked projects:
 
+![Projects Summary](assets/projects-preview.png)
+
 - Current project marked with `▸`
 - Cost, budget, and budget utilization percentage per project
 - Grand total across all projects

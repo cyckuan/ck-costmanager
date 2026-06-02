@@ -24,3 +24,4 @@
 - [x] Theme-aware color scheme (dark/light from ~/.claude/settings.json)
 - [x] Configurable colors via config/colors.json
 - [x] Annotated report-preview.png with callouts and leader lines
+- [x] Annotated projects-preview.png for multi-project view
