@@ -87,9 +87,10 @@ const c = loadColorScheme();
 
 // ─── PROJECT IDENTITY ──────────────────────────────────────────────────────────
 function getProjectId(cwd) {
+  const dir = cwd || process.cwd();
   try {
     const remote = execSync('git remote get-url origin', {
-      cwd: cwd || process.cwd(),
+      cwd: dir,
       encoding: 'utf8',
       timeout: 2000,
       stdio: ['pipe', 'pipe', 'pipe']
@@ -100,7 +101,7 @@ function getProjectId(cwd) {
     if (httpsMatch) return httpsMatch[1];
     return remote;
   } catch {
-    return path.basename(cwd || process.cwd());
+    return dir;
   }
 }
 
@@ -593,6 +594,119 @@ function cmdLog() {
   });
 }
 
+// ─── PROJECTS ─────────────────────────────────────────────────────────────────
+function cmdProjects() {
+  const state = loadState();
+  const projects = state.projects || {};
+  const ids = Object.keys(projects);
+
+  if (ids.length === 0) {
+    console.log(`${c.budgetText}No projects tracked yet.${c.reset}`);
+    return;
+  }
+
+  const costs = loadCosts();
+  const cwd = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+  const currentId = getProjectId(cwd);
+
+  const rows = [];
+  let grandTotal = 0;
+
+  for (const id of ids) {
+    const ps = projects[id];
+    const logPath = getLogPath(id);
+    let totalCost = 0;
+    let entries = 0;
+    let lastTs = 0;
+
+    if (fs.existsSync(logPath)) {
+      const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').filter(Boolean);
+      entries = lines.length;
+      for (const line of lines) {
+        let entry;
+        try { entry = JSON.parse(line); } catch { continue; }
+        const tier = entry.model || 'opus';
+        const rates = costs[tier] || costs.opus;
+        totalCost += (
+          (entry.input || 0) * rates.input +
+          (entry.output || 0) * rates.output +
+          (entry.cacheWrite || 0) * rates.cacheWrite +
+          (entry.cacheRead || 0) * rates.cacheRead
+        ) / 1_000_000;
+        if (entry.ts > lastTs) lastTs = entry.ts;
+      }
+    }
+
+    grandTotal += totalCost;
+    const budget = ps.budget || DEFAULT_BUDGET;
+    const pct = Math.round((totalCost / budget) * 100);
+    const isCurrent = id === currentId;
+
+    rows.push({ id, totalCost, budget, pct, entries, lastTs, enabled: ps.enabled !== false, isCurrent });
+  }
+
+  rows.sort((a, b) => b.lastTs - a.lastTs);
+
+  console.log('');
+  console.log(`  ${c.header}All Projects${c.reset}  ${c.dim}(${rows.length} tracked)${c.reset}`);
+  console.log(`  ${c.border}${'─'.repeat(72)}${c.reset}`);
+  console.log(`  ${c.border}${padRight('Project', 32)}│ ${padRight('Cost', 10)}│ ${padRight('Budget', 10)}│ ${padRight('Status', 12)}${c.reset}`);
+  console.log(`  ${c.border}${'─'.repeat(32)}┼${'─'.repeat(11)}┼${'─'.repeat(11)}┼${'─'.repeat(13)}${c.reset}`);
+
+  for (const row of rows) {
+    const marker = row.isCurrent ? `${c.marker}▸ ${c.reset}` : '  ';
+    let displayId = row.id;
+    if (displayId.length > 29) {
+      displayId = '…' + displayId.slice(-(28));
+    }
+    const nameColor = row.isCurrent ? c.header : c.dim;
+
+    let statusColor, statusText;
+    if (!row.enabled) {
+      statusColor = c.dim;
+      statusText = 'paused';
+    } else if (row.pct > 100) {
+      statusColor = c.overBudget;
+      statusText = `${row.pct}% OVER`;
+    } else if (row.pct > 80) {
+      statusColor = c.gradHigh;
+      statusText = `${row.pct}%`;
+    } else {
+      statusColor = c.underBudget;
+      statusText = `${row.pct}%`;
+    }
+
+    const costStr = '$' + row.totalCost.toFixed(2);
+    const budgetStr = '$' + row.budget.toFixed(2);
+
+    console.log(`${marker}${nameColor}${padRight(displayId, 30)}${c.reset}${c.border}│${c.reset} ${padRight(costStr, 10)}${c.border}│${c.reset} ${padRight(budgetStr, 10)}${c.border}│${c.reset} ${statusColor}${statusText}${c.reset}`);
+  }
+
+  console.log(`  ${c.border}${'─'.repeat(32)}┼${'─'.repeat(11)}┼${'─'.repeat(11)}┼${'─'.repeat(13)}${c.reset}`);
+  console.log(`  ${c.header}${padRight('Grand total', 30)}${c.reset}${c.border}│${c.reset} ${c.header}${padRight('$' + grandTotal.toFixed(2), 10)}${c.reset}${c.border}│${c.reset}`);
+  console.log('');
+
+  if (rows.length > 0) {
+    const lastActive = rows.find(r => r.lastTs > 0);
+    if (lastActive && lastActive.lastTs > 0) {
+      const ago = formatTimeAgo(lastActive.lastTs);
+      console.log(`  ${c.dim}Last activity: ${ago} (${lastActive.id})${c.reset}`);
+    }
+  }
+  console.log('');
+}
+
+function formatTimeAgo(ts) {
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 // ─── MAIN ──────────────────────────────────────────────────────────────────────
 const cmd = process.argv[2] || 'report';
 
@@ -602,7 +716,8 @@ switch (cmd) {
   case 'reset': cmdReset(); break;
   case 'budget': cmdBudget(process.argv[3]); break;
   case 'report': cmdReport(); break;
+  case 'projects': cmdProjects(); break;
   case 'log': cmdLog(); break;
   default:
-    console.log(`Usage: /cost ${c.header}report${c.reset} | ${c.budgetText}budget${c.reset} <USD> | ${c.gradOver}off${c.reset} | ${c.underBudget}on${c.reset} | reset`);
+    console.log(`Usage: /cost ${c.header}report${c.reset} | ${c.header}projects${c.reset} | ${c.budgetText}budget${c.reset} <USD> | ${c.gradOver}off${c.reset} | ${c.underBudget}on${c.reset} | reset`);
 }

@@ -48,7 +48,8 @@ rm -rf ~/.claude/cost-logs/
 
 | Command | Description |
 |---------|-------------|
-| `/cost report` | Show cost summary with cumulative chart |
+| `/cost report` | Show cost summary with cumulative chart (current project) |
+| `/cost projects` | Show summary of all tracked projects |
 | `/cost budget <USD>` | Set session budget (default: $10) |
 | `/cost off` | Pause tracking |
 | `/cost on` | Resume tracking |
@@ -105,9 +106,22 @@ A single-line miniature chart using block characters (`▁▂▃▄▅▆▇█`
 
 The report adapts its color scheme to your current Claude Code theme (dark or light). Colors are read from `config/colors.json` and the active theme is detected from `~/.claude/settings.json`. Edit `config/colors.json` to customize.
 
+## Multi-project support
+
+Each project is tracked independently. `/cost report` always shows the current project; `/cost projects` shows a summary across all tracked projects:
+
+- Current project marked with `▸`
+- Cost, budget, and budget utilization percentage per project
+- Grand total across all projects
+- Last activity timestamp
+
+### Project identification
+
+Projects are identified by git remote URL (e.g. `cyckuan/ck-costmanager`). If no git remote is found (non-git directories), the full working directory path is used as the project identifier.
+
 ## How it works
 
-A Stop hook fires after each turn and parses the session transcript to extract token usage (input, output, cache write, cache read) per API call. Usage is logged per-project, identified by git remote or directory name.
+A Stop hook fires after each turn and parses the session transcript to extract token usage (input, output, cache write, cache read) per API call. Usage is logged per-project, identified by git remote or working directory path.
 
 Multiple Claude Code sessions in different repos track independently.
 
