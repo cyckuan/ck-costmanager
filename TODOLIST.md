@@ -14,3 +14,13 @@
 - [x] Tracking on by default (no setup required)
 - [x] Privacy policy, MIT license, architecture docs
 - [x] Deterministic implementation (no LLM in critical path)
+- [x] Dot-grid background in chart
+- [x] Color gradient (green→yellow→orange→red) based on budget proximity
+- [x] Intermediate Y-axis labels (25/50/75%)
+- [x] Current spend marker ◆
+- [x] Session boundary detection and markers
+- [x] Burn rate ($/hr) indicator
+- [x] Compact sparkline with budget %
+- [x] Theme-aware color scheme (dark/light from ~/.claude/settings.json)
+- [x] Configurable colors via config/colors.json
+- [x] Annotated report-preview.png with callouts and leader lines

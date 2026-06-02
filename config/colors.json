@@ -1,0 +1,56 @@
+{
+  "dark": {
+    "header": "[1;97m",
+    "dim": "[2m",
+    "border": "[2m",
+    "grid": "[2m",
+    "label": "[97m",
+    "budget_line": "[33m",
+    "budget_text": "[33m",
+    "marker": "[1;97m",
+    "rate": "[2m",
+    "spark_label": "[2m",
+    "tier": {
+      "opus": "[35m",
+      "sonnet": "[34m",
+      "haiku": "[32m"
+    },
+    "gradient": {
+      "low": "[32m",
+      "mid": "[33m",
+      "high": "[38;5;208m",
+      "over": "[31m"
+    },
+    "session_bound": "[2m",
+    "under_budget": "[32m",
+    "over_budget": "[1;31m",
+    "reset": "[0m"
+  },
+  "light": {
+    "header": "[1;30m",
+    "dim": "[90m",
+    "border": "[90m",
+    "grid": "[37m",
+    "label": "[30m",
+    "budget_line": "[38;5;208m",
+    "budget_text": "[38;5;208m",
+    "marker": "[1;30m",
+    "rate": "[90m",
+    "spark_label": "[90m",
+    "tier": {
+      "opus": "[1;35m",
+      "sonnet": "[1;34m",
+      "haiku": "[1;32m"
+    },
+    "gradient": {
+      "low": "[32m",
+      "mid": "[38;5;136m",
+      "high": "[38;5;208m",
+      "over": "[1;31m"
+    },
+    "session_bound": "[37m",
+    "under_budget": "[32m",
+    "over_budget": "[1;31m",
+    "reset": "[0m"
+  }
+}

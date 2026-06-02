@@ -8,24 +8,82 @@ const { execSync } = require('child_process');
 
 const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT || path.resolve(__dirname, '..');
 const COST_PATH = path.join(PLUGIN_ROOT, 'config', 'modelcost.json');
+const COLORS_PATH = path.join(PLUGIN_ROOT, 'config', 'colors.json');
 const LOG_DIR = path.join(os.homedir(), '.claude', 'cost-logs');
 const STATE_PATH = path.join(LOG_DIR, 'state.json');
+const SETTINGS_PATH = path.join(os.homedir(), '.claude', 'settings.json');
 const DEFAULT_BUDGET = 10;
 
-// ─── ANSI COLOURS ──────────────────────────────────────────────────────────────
-const c = {
-  reset: '\x1b[0m',
-  bold: '\x1b[1m',
-  dim: '\x1b[2m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
-  white: '\x1b[97m',
-  grey: '\x1b[90m',
-};
+// ─── THEME DETECTION ──────────────────────────────────────────────────────────
+function detectTheme() {
+  try {
+    const settings = JSON.parse(fs.readFileSync(SETTINGS_PATH, 'utf8'));
+    const theme = settings.theme || '';
+    return /light/i.test(theme) ? 'light' : 'dark';
+  } catch {
+    return 'dark';
+  }
+}
+
+function loadColorScheme() {
+  const mode = detectTheme();
+  const esc = (code) => code ? `\x1b${code}` : '';
+
+  try {
+    const raw = JSON.parse(fs.readFileSync(COLORS_PATH, 'utf8'));
+    const scheme = raw[mode] || raw.dark;
+    return {
+      reset: esc(scheme.reset),
+      header: esc(scheme.header),
+      dim: esc(scheme.dim),
+      border: esc(scheme.border),
+      grid: esc(scheme.grid),
+      label: esc(scheme.label),
+      budgetLine: esc(scheme.budget_line),
+      budgetText: esc(scheme.budget_text),
+      marker: esc(scheme.marker),
+      rate: esc(scheme.rate),
+      sparkLabel: esc(scheme.spark_label),
+      tierOpus: esc(scheme.tier?.opus),
+      tierSonnet: esc(scheme.tier?.sonnet),
+      tierHaiku: esc(scheme.tier?.haiku),
+      gradLow: esc(scheme.gradient?.low),
+      gradMid: esc(scheme.gradient?.mid),
+      gradHigh: esc(scheme.gradient?.high),
+      gradOver: esc(scheme.gradient?.over),
+      sessionBound: esc(scheme.session_bound),
+      underBudget: esc(scheme.under_budget),
+      overBudget: esc(scheme.over_budget),
+    };
+  } catch {
+    const isDark = mode === 'dark';
+    return {
+      reset: '\x1b[0m',
+      header: isDark ? '\x1b[1;97m' : '\x1b[1;30m',
+      dim: isDark ? '\x1b[2m' : '\x1b[90m',
+      border: isDark ? '\x1b[2m' : '\x1b[90m',
+      grid: isDark ? '\x1b[2m' : '\x1b[37m',
+      label: isDark ? '\x1b[97m' : '\x1b[30m',
+      budgetLine: '\x1b[33m',
+      budgetText: '\x1b[33m',
+      marker: isDark ? '\x1b[1;97m' : '\x1b[1;30m',
+      rate: isDark ? '\x1b[2m' : '\x1b[90m',
+      sparkLabel: isDark ? '\x1b[2m' : '\x1b[90m',
+      tierOpus: isDark ? '\x1b[35m' : '\x1b[1;35m',
+      tierSonnet: isDark ? '\x1b[34m' : '\x1b[1;34m',
+      tierHaiku: isDark ? '\x1b[32m' : '\x1b[1;32m',
+      gradLow: '\x1b[32m',
+      gradMid: '\x1b[33m',
+      gradHigh: '\x1b[38;5;208m',
+      gradOver: isDark ? '\x1b[31m' : '\x1b[1;31m',
+      sessionBound: isDark ? '\x1b[2m' : '\x1b[37m',
+      underBudget: '\x1b[32m',
+      overBudget: isDark ? '\x1b[1;31m' : '\x1b[1;31m',
+    };
+  }
+}
+
+const c = loadColorScheme();
 
 // ─── PROJECT IDENTITY ──────────────────────────────────────────────────────────
 function getProjectId(cwd) {
@@ -118,13 +176,13 @@ function cmdOn() {
   const ps = getProjectState(state, projectId);
 
   if (ps.enabled) {
-    console.log(`${c.yellow}Cost tracking is already on for ${c.cyan}${projectId}${c.reset}`);
+    console.log(`${c.budgetText}Cost tracking is already on for ${c.header}${projectId}${c.reset}`);
     return;
   }
 
   ps.enabled = true;
   saveState(state);
-  console.log(`${c.green}Cost tracking resumed${c.reset} for ${c.bold}${c.cyan}${projectId}${c.reset}`);
+  console.log(`${c.underBudget}Cost tracking resumed${c.reset} for ${c.header}${projectId}${c.reset}`);
 }
 
 // ─── BUDGET ────────────────────────────────────────────────────────────────────
@@ -137,12 +195,12 @@ function cmdBudget(amount) {
   const val = parseFloat(amount);
   if (isNaN(val) || val <= 0) {
     console.log(`Usage: /cost budget <amount in USD>`);
-    console.log(`Current budget for ${c.cyan}${projectId}${c.reset}: ${c.yellow}$${ps.budget.toFixed(2)}${c.reset}`);
+    console.log(`Current budget for ${c.header}${projectId}${c.reset}: ${c.budgetText}$${ps.budget.toFixed(2)}${c.reset}`);
     return;
   }
   ps.budget = val;
   saveState(state);
-  console.log(`${c.green}Budget set to ${c.yellow}$${val.toFixed(2)}${c.reset} for ${c.cyan}${projectId}${c.reset}`);
+  console.log(`${c.underBudget}Budget set to ${c.budgetText}$${val.toFixed(2)}${c.reset} for ${c.header}${projectId}${c.reset}`);
 }
 
 // ─── OFF ───────────────────────────────────────────────────────────────────────
@@ -168,7 +226,7 @@ function cmdReset() {
   if (fs.existsSync(logPath)) fs.writeFileSync(logPath, '');
   ps.lastOffset = 0;
   saveState(state);
-  console.log(`${c.green}Cost log cleared${c.reset} for ${c.cyan}${projectId}${c.reset}`);
+  console.log(`${c.underBudget}Cost log cleared${c.reset} for ${c.header}${projectId}${c.reset}`);
 }
 
 // ─── REPORT ────────────────────────────────────────────────────────────────────
@@ -178,13 +236,13 @@ function cmdReport() {
   const logPath = getLogPath(projectId);
 
   if (!fs.existsSync(logPath)) {
-    console.log(`${c.yellow}No usage data yet for ${c.cyan}${projectId}${c.reset}. Tracking starts automatically.`);
+    console.log(`${c.budgetText}No usage data yet for ${c.header}${projectId}${c.reset}. Tracking starts automatically.`);
     return;
   }
 
   const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').filter(Boolean);
   if (lines.length === 0) {
-    console.log(`${c.yellow}No usage data recorded yet for ${c.cyan}${projectId}${c.reset}.`);
+    console.log(`${c.budgetText}No usage data recorded yet for ${c.header}${projectId}${c.reset}.`);
     return;
   }
 
@@ -235,43 +293,43 @@ function cmdReport() {
 
   // Header
   console.log('');
-  console.log(`  ${c.bold}${c.white}Cost Report${c.reset}  ${c.dim}─${c.reset}  ${c.cyan}${projectId}${c.reset}`);
-  console.log(`  ${c.dim}${'─'.repeat(58)}${c.reset}`);
+  console.log(`  ${c.header}Cost Report${c.reset}  ${c.dim}─${c.reset}  ${c.header}${projectId}${c.reset}`);
+  console.log(`  ${c.border}${'─'.repeat(58)}${c.reset}`);
 
   // Table header
-  console.log(`  ${c.dim}${padRight('Model', 10)}│ ${padRight('Input', 9)}│ ${padRight('Output', 9)}│ ${padRight('Cache', 9)}│ ${padRight('Cost', 8)}${c.reset}`);
-  console.log(`  ${c.dim}${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(9)}${c.reset}`);
+  console.log(`  ${c.border}${padRight('Model', 10)}│ ${padRight('Input', 9)}│ ${padRight('Output', 9)}│ ${padRight('Cache', 9)}│ ${padRight('Cost', 8)}${c.reset}`);
+  console.log(`  ${c.border}${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(9)}${c.reset}`);
 
-  const tierColor = { opus: c.magenta, sonnet: c.blue, haiku: c.green };
+  const tierColor = { opus: c.tierOpus, sonnet: c.tierSonnet, haiku: c.tierHaiku };
   const tiers = ['opus', 'sonnet', 'haiku'];
 
   for (const tier of tiers) {
     const m = byModel[tier];
     if (!m) continue;
     const cache = m.cacheWrite + m.cacheRead;
-    const tc = tierColor[tier] || c.white;
-    console.log(`  ${tc}${padRight(tier, 10)}${c.reset}${c.dim}│${c.reset} ${padRight(formatTokens(m.input), 9)}${c.dim}│${c.reset} ${padRight(formatTokens(m.output), 9)}${c.dim}│${c.reset} ${padRight(formatTokens(cache), 9)}${c.dim}│${c.reset} ${padLeft(c.white + '$' + m.cost.toFixed(2) + c.reset, 8)}`);
+    const tc = tierColor[tier] || c.label;
+    console.log(`  ${tc}${padRight(tier, 10)}${c.reset}${c.border}│${c.reset} ${padRight(formatTokens(m.input), 9)}${c.border}│${c.reset} ${padRight(formatTokens(m.output), 9)}${c.border}│${c.reset} ${padRight(formatTokens(cache), 9)}${c.border}│${c.reset} ${padLeft(c.label + '$' + m.cost.toFixed(2) + c.reset, 8)}`);
   }
 
-  console.log(`  ${c.dim}${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(9)}${c.reset}`);
+  console.log(`  ${c.border}${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(10)}┼${'─'.repeat(9)}${c.reset}`);
 
   const allInput = Object.values(byModel).reduce((s, m) => s + m.input, 0);
   const allOutput = Object.values(byModel).reduce((s, m) => s + m.output, 0);
   const allCache = Object.values(byModel).reduce((s, m) => s + m.cacheWrite + m.cacheRead, 0);
-  console.log(`  ${c.bold}${padRight('Total', 10)}${c.reset}${c.dim}│${c.reset} ${padRight(formatTokens(allInput), 9)}${c.dim}│${c.reset} ${padRight(formatTokens(allOutput), 9)}${c.dim}│${c.reset} ${padRight(formatTokens(allCache), 9)}${c.dim}│${c.reset} ${padLeft(c.bold + c.white + '$' + totalCost.toFixed(2) + c.reset, 8)}`);
+  console.log(`  ${c.header}${padRight('Total', 10)}${c.reset}${c.border}│${c.reset} ${padRight(formatTokens(allInput), 9)}${c.border}│${c.reset} ${padRight(formatTokens(allOutput), 9)}${c.border}│${c.reset} ${padRight(formatTokens(allCache), 9)}${c.border}│${c.reset} ${padLeft(c.header + '$' + totalCost.toFixed(2) + c.reset, 8)}`);
 
   if (subagentCalls > 0) {
     console.log('');
-    console.log(`  ${c.magenta}Agents:${c.reset} ${subagentCalls} sub-agent calls (${c.yellow}$${subagentCost.toFixed(2)}${c.reset})`);
+    console.log(`  ${c.tierOpus}Agents:${c.reset} ${subagentCalls} sub-agent calls (${c.budgetText}$${subagentCost.toFixed(2)}${c.reset})`);
   }
 
   // Budget variance
   const variance = budget - totalCost;
   console.log('');
   if (variance >= 0) {
-    console.log(`  ${c.dim}Budget:${c.reset} ${c.yellow}$${budget.toFixed(2)}${c.reset}  ${c.dim}│${c.reset}  ${c.green}Under budget by $${variance.toFixed(2)}${c.reset}`);
+    console.log(`  ${c.dim}Budget:${c.reset} ${c.budgetText}$${budget.toFixed(2)}${c.reset}  ${c.border}│${c.reset}  ${c.underBudget}Under budget by $${variance.toFixed(2)}${c.reset}`);
   } else {
-    console.log(`  ${c.dim}Budget:${c.reset} ${c.yellow}$${budget.toFixed(2)}${c.reset}  ${c.dim}│${c.reset}  ${c.bold}${c.red}OVER budget by $${Math.abs(variance).toFixed(2)}${c.reset}`);
+    console.log(`  ${c.dim}Budget:${c.reset} ${c.budgetText}$${budget.toFixed(2)}${c.reset}  ${c.border}│${c.reset}  ${c.overBudget}OVER budget by $${Math.abs(variance).toFixed(2)}${c.reset}`);
   }
 
   if (timeBuckets.length > 1) {
@@ -281,13 +339,49 @@ function cmdReport() {
   console.log('');
 }
 
+function gradientColor(norm, budgetNorm) {
+  if (norm > budgetNorm) return c.gradOver;
+  const ratio = norm / budgetNorm;
+  if (ratio < 0.5) return c.gradLow;
+  if (ratio < 0.8) return c.gradMid;
+  return c.gradHigh;
+}
+
+function detectSessionBoundaries(sorted, numSlots, span, startTs) {
+  if (span === 0 || sorted.length < 2) return new Set();
+  const gaps = [];
+  for (let i = 1; i < sorted.length; i++) {
+    gaps.push({ idx: i, gap: sorted[i].ts - sorted[i - 1].ts });
+  }
+  const avgGap = span / sorted.length;
+  const threshold = Math.max(avgGap * 3, 60000);
+  const boundaries = new Set();
+  for (const { idx, gap } of gaps) {
+    if (gap > threshold) {
+      const slot = Math.min(numSlots - 1, Math.floor(((sorted[idx].ts - startTs) / span) * numSlots));
+      boundaries.add(slot);
+    }
+  }
+  return boundaries;
+}
+
+function renderSparkline(cumulative, maxVal, budgetNorm) {
+  const SPARKS = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+  const line = cumulative.map(v => {
+    const norm = v / maxVal;
+    const idx = Math.min(SPARKS.length - 1, Math.max(0, Math.floor(norm * SPARKS.length)));
+    const color = gradientColor(norm, budgetNorm);
+    return `${color}${SPARKS[idx]}${c.reset}`;
+  }).join('');
+  return line;
+}
+
 function renderCumulativeChart(buckets, budget, totalCost) {
   const BLOCKS = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
   const SUB_LEVELS = BLOCKS.length - 1;
   const CHART_ROWS = 8;
-  const LABEL_WIDTH = 10;
   const termCols = process.stdout.columns || 80;
-  const CHART_WIDTH = Math.min(60, Math.max(20, termCols - LABEL_WIDTH - 12));
+  const CHART_WIDTH = Math.min(60, Math.max(20, termCols - 22));
 
   const sorted = buckets.sort((a, b) => a.ts - b.ts);
   const startTs = sorted[0].ts;
@@ -314,58 +408,115 @@ function renderCumulativeChart(buckets, budget, totalCost) {
   }
 
   const maxVal = Math.max(totalCost, budget) * 1.05;
-
   const budgetNorm = budget / maxVal;
   const budgetRow = CHART_ROWS - 1 - Math.floor(budgetNorm * CHART_ROWS);
   const budgetRowClamped = Math.max(0, Math.min(CHART_ROWS - 1, budgetRow));
 
+  const sessionBounds = detectSessionBoundaries(sorted, numSlots, span, startTs);
+
+  // Current spend marker row
+  const spendNorm = totalCost / maxVal;
+  const spendRow = CHART_ROWS - 1 - Math.floor(spendNorm * CHART_ROWS);
+  const spendRowClamped = Math.max(0, Math.min(CHART_ROWS - 1, spendRow));
+
+  // Y-axis label rows: 25%, 50%, 75%
+  const yLabels = new Map();
+  for (const pct of [0.25, 0.50, 0.75]) {
+    const val = maxVal * pct;
+    const row = CHART_ROWS - 1 - Math.floor(pct * CHART_ROWS);
+    const rowClamped = Math.max(0, Math.min(CHART_ROWS - 1, row));
+    if (rowClamped !== 0 && rowClamped !== budgetRowClamped) {
+      yLabels.set(rowClamped, val);
+    }
+  }
+
   console.log('');
-  console.log(`  ${c.bold}${c.white}Cumulative cost${c.reset}`);
+  console.log(`  ${c.header}Cumulative cost${c.reset}`);
 
   for (let row = 0; row < CHART_ROWS; row++) {
     const rowBottom = (CHART_ROWS - 1 - row) / CHART_ROWS;
     const rowTop = (CHART_ROWS - row) / CHART_ROWS;
 
-    const rowChars = cumulative.map(v => {
-      const norm = v / maxVal;
-      if (norm <= rowBottom) return ' ';
-      if (norm >= rowTop) return BLOCKS[SUB_LEVELS];
-      const partial = (norm - rowBottom) / (rowTop - rowBottom);
-      const idx = Math.max(1, Math.round(partial * SUB_LEVELS));
-      return BLOCKS[idx];
-    }).join('');
+    // Build each column character with per-cell color
+    let rowStr = '';
+    for (let col = 0; col < numSlots; col++) {
+      const norm = cumulative[col] / maxVal;
+      const isSessionBound = sessionBounds.has(col);
 
-    const rowMidNorm = (rowBottom + rowTop) / 2;
-    const barColor = rowMidNorm > budgetNorm ? c.red : c.green;
+      if (norm <= rowBottom) {
+        // Empty cell — dot grid or session marker
+        if (isSessionBound) {
+          rowStr += `${c.sessionBound}╎${c.reset}`;
+        } else {
+          rowStr += `${c.grid}·${c.reset}`;
+        }
+      } else {
+        const cellColor = gradientColor(norm, budgetNorm);
+        if (norm >= rowTop) {
+          rowStr += `${cellColor}${BLOCKS[SUB_LEVELS]}${c.reset}`;
+        } else {
+          const partial = (norm - rowBottom) / (rowTop - rowBottom);
+          const idx = Math.max(1, Math.round(partial * SUB_LEVELS));
+          rowStr += `${cellColor}${BLOCKS[idx]}${c.reset}`;
+        }
+      }
+    }
 
     let leftLabel = '';
     let lineChar = '│';
-    let rightLabel = '│';
+    let rightAnnotation = '';
 
     if (row === 0) {
       leftLabel = padLeft('$' + maxVal.toFixed(2), 7);
       lineChar = '┤';
-      rightLabel = '┐';
+      rightAnnotation = `${c.border}┐${c.reset}`;
     } else if (row === budgetRowClamped) {
       leftLabel = padLeft('$' + budget.toFixed(2), 7);
       lineChar = '┤';
-      console.log(`  ${c.dim}${leftLabel} ${lineChar}${c.yellow}${'╌'.repeat(numSlots)}${c.dim}┤${c.reset} ${c.yellow}budget${c.reset}`);
+      const budgetLine = Array.from({ length: numSlots }, (_, col) => {
+        const norm = cumulative[col] / maxVal;
+        if (norm > budgetNorm) return `${c.budgetLine}═${c.reset}`;
+        return `${c.budgetLine}╌${c.reset}`;
+      }).join('');
+      const marker = row === spendRowClamped ? `${c.marker}◆${c.reset}` : `${c.border}┤${c.reset}`;
+      console.log(`  ${c.border}${leftLabel} ${lineChar}${c.reset}${budgetLine}${marker} ${c.budgetText}budget${c.reset}`);
       continue;
+    } else if (yLabels.has(row)) {
+      const val = yLabels.get(row);
+      leftLabel = padLeft('$' + val.toFixed(2), 7);
+      lineChar = '┤';
+      rightAnnotation = row === spendRowClamped
+        ? `${c.marker}◆${c.reset}`
+        : `${c.border}┤${c.reset}`;
     } else {
       leftLabel = ' '.repeat(7);
+      rightAnnotation = row === spendRowClamped
+        ? `${c.marker}◆${c.reset}`
+        : `${c.border}│${c.reset}`;
     }
 
-    console.log(`  ${c.dim}${leftLabel} ${lineChar}${c.reset}${barColor}${rowChars}${c.dim}${rightLabel}${c.reset}`);
+    console.log(`  ${c.border}${leftLabel} ${lineChar}${c.reset}${rowStr}${rightAnnotation}`);
   }
 
-  console.log(`  ${c.dim}${padLeft('$0', 7)} ┤${'─'.repeat(numSlots)}┘${c.reset}`);
+  // Bottom axis
+  console.log(`  ${c.border}${padLeft('$0', 7)} ┤${'─'.repeat(numSlots)}┘${c.reset}`);
 
+  // Time labels + rate indicator
   if (span > 0) {
     const startLabel = new Date(startTs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const endLabel = new Date(endTs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const gap = Math.max(1, numSlots - startLabel.length - endLabel.length);
-    console.log(`  ${c.dim}${' '.repeat(8)}${startLabel}${' '.repeat(gap)}${endLabel}${c.reset}`);
+    const hours = span / 3_600_000;
+    const rate = hours > 0 ? totalCost / hours : 0;
+    const rateStr = `${c.rate}${rate.toFixed(2)}$/hr${c.reset}`;
+    const rateVisible = rate.toFixed(2).length + 4; // "X.XX$/hr"
+    const gap = Math.max(1, numSlots - startLabel.length - endLabel.length - rateVisible - 1);
+    console.log(`  ${c.dim}${' '.repeat(8)}${startLabel}${' '.repeat(gap)}${endLabel}  ${c.reset}${rateStr}`);
   }
+
+  // Compact sparkline
+  const pctUsed = Math.min(100, Math.round((totalCost / budget) * 100));
+  const spark = renderSparkline(cumulative, maxVal, budgetNorm);
+  console.log(`  ${c.sparkLabel}Spark:${c.reset} ${spark} ${c.sparkLabel}${pctUsed}% of budget${c.reset}`);
 }
 
 // ─── LOG (called by Stop hook via stdin) ───────────────────────────────────────
@@ -453,5 +604,5 @@ switch (cmd) {
   case 'report': cmdReport(); break;
   case 'log': cmdLog(); break;
   default:
-    console.log(`Usage: /cost ${c.cyan}report${c.reset} | ${c.yellow}budget${c.reset} <USD> | ${c.red}off${c.reset} | ${c.green}on${c.reset} | reset`);
+    console.log(`Usage: /cost ${c.header}report${c.reset} | ${c.budgetText}budget${c.reset} <USD> | ${c.gradOver}off${c.reset} | ${c.underBudget}on${c.reset} | reset`);
 }
