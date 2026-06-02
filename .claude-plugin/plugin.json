@@ -1,0 +1,12 @@
+{
+  "name": "ck-costmanager",
+  "displayName": "Cost Manager",
+  "version": "1.0.0",
+  "description": "Track token usage and calculate costs per session with budget tracking, per-model breakdown, and cumulative cost charts",
+  "author": {
+    "name": "cyckuan"
+  },
+  "repository": "https://github.com/cyckuan/ck-costmanager",
+  "license": "MIT",
+  "keywords": ["cost", "tokens", "budget", "usage", "tracking", "billing"]
+}

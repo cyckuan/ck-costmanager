@@ -1,0 +1,17 @@
+{
+  "description": "Log token usage after each turn when cost tracking is enabled",
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/cost.js\" log",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
