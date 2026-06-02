@@ -46,17 +46,63 @@ function buildLines() {
   const red = (t) => ({ text: t, color: COLORS.overBudget, bold: true });
   const mk = (t) => ({ text: t, color: COLORS.marker, bold: true });
 
+  // Column widths (character counts)
+  const C1 = 32; // name column (includes 4-char prefix: "  ▸ " or "    ")
+  const C2 = 10; // cost
+  const C3 = 10; // budget
+  const C4 = 12; // status
+
+  function pad(str, len) {
+    return str + ' '.repeat(Math.max(0, len - str.length));
+  }
+
+  function tableRow(nameSegs, cost, budget, status) {
+    // nameSegs already accounts for C1 width
+    return [...nameSegs, b('│'), ...cost, b('│'), ...budget, b('│'), ...status];
+  }
+
+  const projects = [
+    { prefix: '▸ ', name: 'cyckuan/ck-costmanager', cost: '$4.72', budget: '$10.00', pct: 47, current: true },
+    { prefix: '  ', name: 'cyckuan/ck-statusline', cost: '$18.30', budget: '$25.00', pct: 73, current: false },
+    { prefix: '  ', name: 'acme-corp/billing-api', cost: '$42.15', budget: '$50.00', pct: 84, current: false },
+    { prefix: '  ', name: '/home/user/scratch/proto', cost: '$7.80', budget: '$5.00', pct: 156, current: false },
+  ];
+
   lines.push([]);
   lines.push([h('  All Projects'), d('  (4 tracked)')]);
-  lines.push([b('  ───────────────────────────────────────────────────────────────────')]);
-  lines.push([b('    Project                         │ Cost     │ Budget   │ Status     ')]);
-  lines.push([b('  ──────────────────────────────────┼──────────┼──────────┼────────────')]);
-  lines.push([n('  '), mk('▸'), n(' '), h('cyckuan/ck-costmanager         '), b('│'), n(' $4.72    '), b('│'), n(' $10.00   '), b('│'), green(' 47%')]);
-  lines.push([n('    '), d('cyckuan/ck-statusline          '), b('│'), n(' $18.30   '), b('│'), n(' $25.00   '), b('│'), green(' 73%')]);
-  lines.push([n('    '), d('acme-corp/billing-api          '), b('│'), n(' $42.15   '), b('│'), n(' $50.00   '), b('│'), orange(' 84%')]);
-  lines.push([n('    '), d('/home/user/scratch/prototype   '), b('│'), n(' $7.80    '), b('│'), n(' $5.00    '), b('│'), red(' 156% OVER')]);
-  lines.push([b('  ──────────────────────────────────┼──────────┼──────────┼────────────')]);
-  lines.push([h('    Grand total                     '), b('│'), h(' $72.97   '), b('│')]);
+  lines.push([b('  ' + '─'.repeat(C1 + C2 + C3 + C4 + 3))]);
+  lines.push([b('  ' + pad('  Project', C1) + '│' + pad(' Cost', C2) + '│' + pad(' Budget', C3) + '│' + pad(' Status', C4))]);
+  lines.push([b('  ' + '─'.repeat(C1) + '┼' + '─'.repeat(C2) + '┼' + '─'.repeat(C3) + '┼' + '─'.repeat(C4))]);
+
+  for (const p of projects) {
+    const nameLen = C1 - 4; // 4 chars for "  ▸ " or "    "
+    const displayName = p.name.length > nameLen ? '…' + p.name.slice(-(nameLen - 1)) : p.name;
+    const paddedName = pad(displayName, nameLen);
+
+    let nameSegs;
+    if (p.current) {
+      nameSegs = [n('  '), mk('▸'), n(' '), h(paddedName)];
+    } else {
+      nameSegs = [n('    '), d(paddedName)];
+    }
+
+    const costField = [n(pad(' ' + p.cost, C2))];
+    const budgetField = [n(pad(' ' + p.budget, C3))];
+
+    let statusSegs;
+    if (p.pct > 100) {
+      statusSegs = [red(' ' + p.pct + '% OVER')];
+    } else if (p.pct > 80) {
+      statusSegs = [orange(' ' + p.pct + '%')];
+    } else {
+      statusSegs = [green(' ' + p.pct + '%')];
+    }
+
+    lines.push(tableRow(nameSegs, costField, budgetField, statusSegs));
+  }
+
+  lines.push([b('  ' + '─'.repeat(C1) + '┼' + '─'.repeat(C2) + '┼' + '─'.repeat(C3) + '┼' + '─'.repeat(C4))]);
+  lines.push([h('  ' + pad('  Grand total', C1)), b('│'), h(pad(' $72.97', C2)), b('│')]);
   lines.push([]);
   lines.push([d('    Last activity: 2m ago (cyckuan/ck-costmanager)')]);
   lines.push([]);
