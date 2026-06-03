@@ -1,5 +1,8 @@
 {
-  "dependencies": {
+  "name": "ck-costmanager",
+  "private": true,
+  "description": "Asset generation scripts (not required for plugin runtime)",
+  "devDependencies": {
     "canvas": "^3.2.3"
   }
 }

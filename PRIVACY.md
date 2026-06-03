@@ -7,27 +7,30 @@
 The plugin extracts the following from your local Claude Code session transcripts:
 
 - **Timestamp** of each API response
+- **Username** from `git config user.name` (falls back to OS username)
 - **Model tier** used (opus, sonnet, haiku)
 - **Token counts**: input, output, cache write, cache read
 - **Agent type**: whether the call was from the main agent or a sub-agent
 
-The plugin also derives a **project identifier** from your git remote URL (e.g. `user/repo`) or working directory name to separate logs per project.
+The plugin also derives a **project identifier** from your git remote URL (e.g. `user/repo`) or working directory path to separate logs per project.
 
 ## Data NOT collected
 
 - No conversation content, prompts, or responses
 - No file paths, code, or filenames from your project
-- No personal information (name, email, API keys)
+- No email addresses or API keys
 - No data is transmitted to any external server or third party
 
 ## Where data is stored
 
-All data remains on your local machine:
+By default, all data remains on your local machine:
 
 ```
 ~/.claude/cost-logs/<project>.jsonl   # token usage entries
 ~/.claude/cost-logs/state.json        # tracking offsets and budget settings
 ```
+
+If you set the `CLAUDE_COST_LOG_DIR` environment variable to a shared directory (for team usage), logs are written there instead. This is an opt-in choice by the user.
 
 ## Data retention
 

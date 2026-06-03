@@ -558,6 +558,13 @@ function cmdLog() {
         process.exit(0);
       }
 
+      const resolvedTranscript = path.resolve(transcriptPath);
+      const claudeDir = path.join(os.homedir(), '.claude');
+      if (!resolvedTranscript.startsWith(claudeDir)) {
+        process.stdout.write('{"decision":"approve"}');
+        process.exit(0);
+      }
+
       ensureLogDir();
       const logPath = getLogPath(projectId);
 
