@@ -1,15 +1,16 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "ck-costmanager",
-  "description": "Track token usage and calculate costs per session with budget tracking, per-model breakdown, and cumulative cost charts",
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "ck-claude",
+  "description": "Per-project token cost tracking for Claude Code",
   "owner": {
     "name": "cyckuan"
   },
   "plugins": [
     {
       "name": "ck-costmanager",
-      "source": ".",
-      "description": "Track token usage and calculate costs per session with budget tracking, per-model breakdown, and cumulative cost charts",
+      "displayName": "Cost Manager",
+      "source": "./",
+      "description": "Track token usage and calculate costs per project with budget tracking, per-model breakdown, sub-agent attribution, and a terminal cumulative cost chart. Tracking is on by default and logs persist on disk across sessions, restarts, and reinstalls.",
       "version": "1.0.0",
       "author": {
         "name": "cyckuan"
