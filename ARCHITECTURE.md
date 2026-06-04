@@ -20,13 +20,13 @@ This plugin is designed to minimise LLM involvement. All logic executes as deter
 
 | Component | What the LLM does | Risk |
 |-----------|-------------------|------|
-| `/ckcost` command dispatch | Reads `commands/ckcost.md`, runs `node cost.js $ARGUMENTS` | LLM must correctly pass user arguments to bash |
+| `/cmgr` command dispatch | Reads `commands/cmgr.md`, runs `node cost.js $ARGUMENTS` | LLM must correctly pass user arguments to bash |
 
 The slash command `.md` file is the only LLM touchpoint. It instructs Claude to run a single bash command and display output. The instruction is minimal to reduce interpretation variance.
 
 ### Why the command file exists
 
-Claude Code's plugin system requires a `.md` file for slash commands — there is no "pure code" command registration. The `.md` content is a prompt that the LLM interprets when the user invokes `/ckcost`. This is an unavoidable platform constraint.
+Claude Code's plugin system requires a `.md` file for slash commands — there is no "pure code" command registration. The `.md` content is a prompt that the LLM interprets when the user invokes `/cmgr`. This is an unavoidable platform constraint.
 
 ### Mitigations
 
@@ -63,5 +63,5 @@ stdout (displayed to user)
 scripts/cost.js        # All logic — single file, zero dependencies
 config/modelcost.json  # Pricing rates (user-editable)
 hooks/hooks.json       # Stop hook registration (deterministic command)
-commands/ckcost.md       # Slash command prompt (only LLM touchpoint)
+commands/cmgr.md       # Slash command prompt (only LLM touchpoint)
 ```
