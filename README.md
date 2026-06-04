@@ -16,7 +16,7 @@ Claude Code doesn't provide per-project cost breakdowns. If you work across mult
 
 **Persistent across sessions.** Cost data is stored on the filesystem, not in conversation memory. Logs survive `/clear`, session restarts, plugin reinstalls, and machine reboots. Your cost history is never lost.
 
-The plugin is installed through a Claude Code **marketplace**. Pick whichever source fits — a local clone (for development) or the git repository (for normal use). Both register a marketplace named `ck-claude`, then install the plugin from it.
+The plugin is installed through a Claude Code **marketplace**. Pick whichever source fits — a local clone (for development) or the git repository (for normal use). Both register a marketplace named `ck-costmanager`, then install the plugin from it.
 
 ### From a local clone (local marketplace)
 
@@ -32,7 +32,7 @@ git clone git@github.com:cyckuan/ck-costmanager.git ~/cc/ck-costmanager
 
 ```bash
 claude plugin marketplace add ~/cc/ck-costmanager
-claude plugin install ck-costmanager@ck-claude
+claude plugin install ck-costmanager@ck-costmanager
 ```
 
 `marketplace add` reads `.claude-plugin/marketplace.json` from the repo and registers a directory-source marketplace pointing at your clone. Because it points at the directory, `git pull` in the clone keeps the plugin up to date.
@@ -47,7 +47,7 @@ Use this for a normal install without keeping a working copy:
 
 ```bash
 claude plugin marketplace add cyckuan/ck-costmanager
-claude plugin install ck-costmanager@ck-claude
+claude plugin install ck-costmanager@ck-costmanager
 ```
 
 `marketplace add` accepts an `owner/repo` shorthand, a full `https://` / `git@` URL, or a local path. Restart Claude Code after installing.
@@ -57,8 +57,8 @@ claude plugin install ck-costmanager@ck-claude
 Uninstall the plugin and, optionally, remove its marketplace:
 
 ```bash
-claude plugin uninstall ck-costmanager@ck-claude
-claude plugin marketplace remove ck-claude   # optional
+claude plugin uninstall ck-costmanager@ck-costmanager
+claude plugin marketplace remove ck-costmanager   # optional
 ```
 
 To also remove cost logs:

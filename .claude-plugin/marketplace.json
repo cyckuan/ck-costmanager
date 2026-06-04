@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
-  "name": "ck-claude",
+  "name": "ck-costmanager",
   "description": "Per-project token cost tracking for Claude Code",
   "owner": {
     "name": "cyckuan"
