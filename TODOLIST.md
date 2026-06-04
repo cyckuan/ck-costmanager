@@ -25,3 +25,5 @@
 - [x] Configurable colors via config/colors.json
 - [x] Annotated report-preview.png with callouts and leader lines
 - [x] Annotated projects-preview.png for multi-project view
+- [x] Marketplace manifest (.claude-plugin/marketplace.json) for local/git install
+- [x] README install docs updated for marketplace flow

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ck-costmanager",
+  "description": "Track token usage and calculate costs per session with budget tracking, per-model breakdown, and cumulative cost charts",
+  "owner": {
+    "name": "cyckuan"
+  },
+  "plugins": [
+    {
+      "name": "ck-costmanager",
+      "source": ".",
+      "description": "Track token usage and calculate costs per session with budget tracking, per-model breakdown, and cumulative cost charts",
+      "version": "1.0.0",
+      "author": {
+        "name": "cyckuan"
+      },
+      "category": "productivity",
+      "repository": "https://github.com/cyckuan/ck-costmanager",
+      "homepage": "https://github.com/cyckuan/ck-costmanager",
+      "license": "MIT",
+      "keywords": ["cost", "tokens", "budget", "usage", "tracking", "billing"]
+    }
+  ]
+}

@@ -8,46 +8,57 @@ A Claude Code plugin that tracks token usage and calculates costs per project. T
 
 Claude Code doesn't provide per-project cost breakdowns. If you work across multiple repositories — or bill clients for AI-assisted development — you need to know exactly what each project costs.
 
-**Client budgets.** When a client allocates a fixed budget for AI-assisted work, you need real-time visibility into spend so you don't exceed the agreement. Set the budget with `/cost budget` and get immediate visual feedback when you're approaching the limit.
+**Client budgets.** When a client allocates a fixed budget for AI-assisted work, you need real-time visibility into spend so you don't exceed the agreement. Set the budget with `/ckcost budget` and get immediate visual feedback when you're approaching the limit.
 
 **Invoicing and billing.** The per-project cost logs (`~/.claude/cost-logs/*.jsonl`) provide a timestamped record of every API call — model used, tokens consumed, dollar cost. This data can form the basis of itemized invoices for contract work.
 
-**Multi-project awareness.** Developers often context-switch across repositories in a single day. `/cost projects` shows a unified view of spend across all tracked projects, so you can see where your budget is going without switching directories.
+**Multi-project awareness.** Developers often context-switch across repositories in a single day. `/ckcost projects` shows a unified view of spend across all tracked projects, so you can see where your budget is going without switching directories.
 
 **Persistent across sessions.** Cost data is stored on the filesystem, not in conversation memory. Logs survive `/clear`, session restarts, plugin reinstalls, and machine reboots. Your cost history is never lost.
 
-## Installation
+The plugin is installed through a Claude Code **marketplace**. Pick whichever source fits — a local clone (for development) or the git repository (for normal use). Both register a marketplace named `ck-costmanager`, then install the plugin from it.
 
-### From git repository
+### From a local clone (local marketplace)
 
-```bash
-claude plugin add --from git@github.com:cyckuan/ck-costmanager.git
-```
+Use this when you want to run the plugin from a working copy on disk.
 
-Or using HTTPS:
+1. Clone the repository somewhere convenient:
 
 ```bash
-claude plugin add --from https://github.com/cyckuan/ck-costmanager.git
+git clone git@github.com:cyckuan/ck-costmanager.git ~/cc/ck-costmanager
 ```
 
-Restart Claude Code. Tracking begins automatically on the next session.
-
-### Manual clone
-
-1. Clone the repository:
+2. Register the clone as a local marketplace and install the plugin:
 
 ```bash
-git clone git@github.com:cyckuan/ck-costmanager.git ~/.claude/plugins/local/ck-costmanager
+claude plugin marketplace add ~/cc/ck-costmanager
+claude plugin install ck-costmanager@ck-costmanager
 ```
 
-2. Restart Claude Code. The Stop hook registers automatically and begins tracking.
+`marketplace add` reads `.claude-plugin/marketplace.json` from the repo and registers a directory-source marketplace pointing at your clone. Because it points at the directory, `git pull` in the clone keeps the plugin up to date.
+
+3. Restart Claude Code. The Stop hook registers automatically and tracking begins on the next session.
+
+Equivalently, you can do both steps interactively with `/plugin` → **Manage marketplaces** → **Add marketplace**, then install `ck-costmanager` from it.
+
+### From the git repository
+
+Use this for a normal install without keeping a working copy:
+
+```bash
+claude plugin marketplace add cyckuan/ck-costmanager
+claude plugin install ck-costmanager@ck-costmanager
+```
+
+`marketplace add` accepts an `owner/repo` shorthand, a full `https://` / `git@` URL, or a local path. Restart Claude Code after installing.
 
 ## Uninstallation
 
-Remove the plugin and optionally delete stored logs:
+Uninstall the plugin and, optionally, remove its marketplace:
 
 ```bash
-claude plugin remove ck-costmanager
+claude plugin uninstall ck-costmanager@ck-costmanager
+claude plugin marketplace remove ck-costmanager   # optional
 ```
 
 To also remove cost logs:
@@ -60,12 +71,12 @@ rm -rf ~/.claude/cost-logs/
 
 | Command | Description |
 |---------|-------------|
-| `/cost report` | Show cost summary with cumulative chart (current project) |
-| `/cost projects` | Show summary of all tracked projects |
-| `/cost budget <USD>` | Set session budget (default: $10) |
-| `/cost off` | Pause tracking |
-| `/cost on` | Resume tracking |
-| `/cost reset` | Clear the log for this project |
+| `/ckcost report` | Show cost summary with cumulative chart (current project) |
+| `/ckcost projects` | Show summary of all tracked projects |
+| `/ckcost budget <USD>` | Set session budget (default: $10) |
+| `/ckcost off` | Pause tracking |
+| `/ckcost on` | Resume tracking |
+| `/ckcost reset` | Clear the log for this project |
 
 ## Report elements
 
@@ -90,7 +101,7 @@ When Claude Code spawns sub-agents (parallel workers, code reviewers, etc.), the
 
 ### Budget variance
 
-Compares total spend against your configured budget. Displays green "Under budget by $X" or bold red "OVER budget by $X". Set the budget with `/cost budget <amount>`.
+Compares total spend against your configured budget. Displays green "Under budget by $X" or bold red "OVER budget by $X". Set the budget with `/ckcost budget <amount>`.
 
 ### Cumulative cost chart
 
@@ -120,7 +131,7 @@ The report adapts its color scheme to your current Claude Code theme (dark or li
 
 ## Multi-project support
 
-Each project is tracked independently. `/cost report` always shows the current project; `/cost projects` shows a summary across all tracked projects:
+Each project is tracked independently. `/ckcost report` always shows the current project; `/ckcost projects` shows a summary across all tracked projects:
 
 ![Projects Summary](assets/projects-preview.png)
 
@@ -148,7 +159,7 @@ Cost logs are written to the filesystem (`~/.claude/cost-logs/`), not stored in 
 - **Reinstall safe** — logs are outside the plugin directory and survive plugin removal/reinstall
 - **Multi-session safe** — different terminal sessions writing to the same project append to the same log file
 
-The only way to lose data is to manually delete the log files or run `/cost reset`.
+The only way to lose data is to manually delete the log files or run `/ckcost reset`.
 
 ## Team usage
 

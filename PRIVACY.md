@@ -34,7 +34,7 @@ If you set the `CLAUDE_COST_LOG_DIR` environment variable to a shared directory 
 
 ## Data retention
 
-Log files persist until you explicitly clear them with `/cost reset` or manually delete `~/.claude/cost-logs/`.
+Log files persist until you explicitly clear them with `/ckcost reset` or manually delete `~/.claude/cost-logs/`.
 
 ## Network access
 
